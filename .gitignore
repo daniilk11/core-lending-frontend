@@ -9,14 +9,13 @@
 /coverage
 
 #files that i will delete
-contract.sol
 /components/oldComponentsWorked
 /.vscode
 /.idea
 
 # next.js
 /.next/
-/out/
+
 
 # production
 /build
