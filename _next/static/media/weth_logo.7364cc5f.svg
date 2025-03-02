@@ -1,0 +1,16 @@
+<svg  id="icon_-_ETH"  data-name="icon - ETH" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="38" height="38" viewBox="0 0 40 40">
+  <defs>
+    <clipPath id="clip-path">
+      <rect id="Rectangle_2458" data-name="Rectangle 2458" width="40" height="40" fill="none"/>
+    </clipPath>
+  </defs>
+  <g id="Group_6781" data-name="Group 6781" clip-path="url(#clip-path)">
+    <path id="Path_8334" data-name="Path 8334" d="M33,40H7a7,7,0,0,1-7-7V7A7,7,0,0,1,7,0H33a7,7,0,0,1,7,7V33a7,7,0,0,1-7,7" fill="#607bee"/>
+    <path id="Path_8335" data-name="Path 8335" d="M20,1.861l-.244.827V26.68l.244.242L31.137,20.34Z" fill="#c0ccf9"/>
+    <path id="Path_8336" data-name="Path 8336" d="M20,1.861,8.864,20.34,20,26.922V1.861Z" fill="#fff"/>
+    <path id="Path_8337" data-name="Path 8337" d="M20,29.031l-.133.167v8.546l.133.4L31.143,22.451Z" fill="#c0ccf9"/>
+    <path id="Path_8338" data-name="Path 8338" d="M20,38.144V29.031L8.864,22.452Z" fill="#fff"/>
+    <path id="Path_8339" data-name="Path 8339" d="M20,26.923,31.137,20.34,20,15.274Z" fill="#8196f1"/>
+    <path id="Path_8340" data-name="Path 8340" d="M8.857,20.34l11.136,6.583V15.277Z" fill="#c0ccf9"/>
+  </g>
+</svg>
