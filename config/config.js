@@ -6,9 +6,14 @@ export const initialMarketsData = [
         decimals: 18,
         ltv: 0.75,
         cTokenAddress: "0x11daF26e5Ac90eA5fE8Cbc50A1c1418B4F01a970",
-        baseRate: 0.05,  // 5% base annual interest rate
+        baseRate: 0.03,  // 5% base annual interest rate
         reserveFactor: 0.1, // 10% from borrowers payment
-        price: 2662.12,
+        price: 2000,
+        totalCollateral: 0,  // Will be updated by mock data
+        totalBorrows: 0,     // Will be updated by mock data
+        totalSupply: 0,      // Will be updated by mock data
+        exchangeRate: 0,     // Will be updated by mock data
+        multiplier: 0.05, //   put weight  on  utilization
     },
     {
         asset: 'LINK',
@@ -16,9 +21,29 @@ export const initialMarketsData = [
         ltv: 0.75,
         decimals: 18,
         cTokenAddress: "0x6cC4983A79A45e74Ad31cb8326C44eEA628E7a35",
-        baseRate: 0.05,
+        baseRate: 0.02,
         reserveFactor: 0.1,
-        price: 1.00,
+        price: 17,
+        totalCollateral: 0,
+        totalBorrows: 0,
+        totalSupply: 0,
+        exchangeRate: 0,
+        multiplier: 0.05,
+    },
+    {
+        asset: 'USDC',
+        address: "0xE4",
+        ltv: 0.80,
+        decimals: 18,
+        cTokenAddress: "0x6cC49",
+        baseRate: 0.04,
+        reserveFactor: 0.1,
+        price: 1,
+        totalCollateral: 0,
+        totalBorrows: 0,
+        totalSupply: 0,
+        exchangeRate: 0,
+        multiplier: 0.05,
     }
 ];
 
