@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import WalletConnectButton from './WalletConnectButton';
 import { motion, AnimatePresence } from 'framer-motion';
+import TestModeToggle from './TestModeToggle';
 
 const Header = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -67,7 +68,8 @@ const Header = () => {
                     </div>
                 </div>
 
-                <div className="flex items-center">
+                <div className="flex items-center gap-4">
+                    <TestModeToggle />
                     <WalletConnectButton/>
                 </div>
             </nav>
