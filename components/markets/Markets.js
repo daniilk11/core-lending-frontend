@@ -10,8 +10,9 @@ import LoadingMessage from "../LoadingMessage";
 import { useAccount } from "wagmi";
 import useGetDataFromBlockChain from "../../hooks/useGetDataFromBlockChain";
 import { formatContractDataForMarkets } from "../../utils/format";
-import WelcomeMessage from "../dashboard/WelcomeMessage";
+import WelcomeMessage from "../WelcomeMessage";
 import ErrorMessage from "../ErrorMessage";
+import { mockConfig } from '../../lib/mockData';
 
 const Markets = () => {
     const [isClientSide, setIsClientSide] = useState(false);
@@ -38,9 +39,9 @@ const Markets = () => {
 
     if (!isClientSide) return null;
 
-    if (!isConnected) return <WelcomeMessage contentName="Markets" />;
-    if (isLoading) return <LoadingMessage contentName="Markets" />;
-    if (isError) return <ErrorMessage contentName="Markets" />;
+    if (!isConnected && !mockConfig.isTestMode) return <WelcomeMessage contentName="Markets" />;
+    if (isLoading && !mockConfig.isTestMode) return <LoadingMessage contentName="Markets" />;
+    if (isError && !mockConfig.isTestMode) return <ErrorMessage contentName="Markets" />;
 
     const handleViewDetails = (market) => {
         setSelectedMarket(market);
@@ -58,9 +59,9 @@ const Markets = () => {
                         healthFactor={healthFactor}
                     />
                 )}
-                        <MarketsHeader />
-                        <MarketsInfo marketsOverView={marketsOverView} />
-                        <MarketTable markets={markets} handleViewDetails={handleViewDetails} />
+                <MarketsHeader />
+                <MarketsInfo marketsOverView={marketsOverView} />
+                <MarketTable markets={markets} handleViewDetails={handleViewDetails} />
             </main>
         </div>
     );
