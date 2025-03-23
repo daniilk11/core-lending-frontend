@@ -25,9 +25,12 @@
     "wagmi": "^2.12.32"
   },
   "devDependencies": {
+    "@next/eslint-plugin-next": "^15.2.3",
     "@types/node": "^18.19.3",
     "@types/react": "^18.3.0",
     "autoprefixer": "^10.4.20",
+    "eslint": "^9.23.0",
+    "eslint-config-next": "^15.2.3",
     "postcss": "^8.4.41",
     "tailwindcss": "^3.4.10",
     "typescript": "5.4.2"
