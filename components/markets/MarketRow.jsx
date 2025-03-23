@@ -8,7 +8,6 @@ const MarketRow = ({market, onViewDetails}) => (
         </td>
         <td className="p-3 cursor-pointer">{market.ltv}</td>
         <td className="p-3 cursor-pointer">{market.supplyApy}%</td>
-
         <td className="p-3 cursor-pointer">
             <div>{market.totalCollateral}</div>
             <div className="text-sm text-purple-600">{market.totalCollateral} {market.asset}</div>
