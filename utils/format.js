@@ -32,26 +32,25 @@ export const formatContractDataForMarkets = (rawData) => {
 
     const updatedMarkets = initialMarketsData.map((market, index) => {
         const offset = index * ITEMS_PER_MARKET;
-        const totalSupply = formatBigInt(rawData[offset].result);
-        const totalBorrows = formatBigInt(rawData[offset + 1].result);
+        market.totalSupply = formatBigInt(rawData[offset].result);
+        market.totalBorrows = formatBigInt(rawData[offset + 1].result);
+        market.totalCollateral = formatBigInt(rawData[offset + 5].result);
+
         const exchangeRate = formatBigInt(rawData[offset + 2].result);
         const price = formatBigInt(rawData[offset + 3].result, PRICE_DECIMALS); // For decimals check chain link
-        allSuppliedAssetsValue += totalSupply * price;
-        allBorrowedAssetsValue += totalBorrows * price;
+        allSuppliedAssetsValue += market.totalSupply * price;
+        allBorrowedAssetsValue += market.totalBorrows * price;
 
         return {
             ...market,
-            totalSupply,
-            totalBorrows,
             exchangeRate,
             price,
             cTokenAddress: rawData[offset + 4].result,
-            totalCollateral: formatBigInt(rawData[offset + 5].result),
+            //if totalCollateral: formatBigInt(rawData[offset + 5].result),
             supplyApy: calculateSupplyApr(market),
             borrowApy: calculateBorrowApr(market),
         };
     });
-
 
     // Update account information TODO to dash board
     // const [borrowedValue, collateralValue] = rawData[10].result;
