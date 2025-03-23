@@ -1,57 +1,49 @@
 // config/contractCallsConfig.js
 import { lendingContractAddress, lendingContractABI, cTokenABI, initialMarketsData } from './config';
 
+// Create reusable contract call configurations
+const createBaseContractCall = (address, abi, functionName, args = []) => ({
+    address,
+    abi,
+    functionName,
+    args
+});
+
+const createCTokenCall = (cTokenAddress, functionName, args = []) =>
+    createBaseContractCall(cTokenAddress, cTokenABI, functionName, args);
+
+const createLendingCall = (functionName, args = []) =>
+    createBaseContractCall(lendingContractAddress, lendingContractABI, functionName, args);
+
+// Predefined cToken functions to reduce repetition
+const CTOKEN_FUNCTIONS = ['totalSupply', 'totalBorrows', 'exchangeRateStored'];
+
 export const createContractCalls = (address, markets = initialMarketsData) => ({
     marketData: markets.map(market => ({
-        cTokenData: ['totalSupply', 'totalBorrows', 'exchangeRateStored'].map(functionName => ({
-            address: market.cTokenAddress,
-            abi: cTokenABI,
-            functionName,
-        })),
-        usdValue: {
-            address: lendingContractAddress,
-            abi: lendingContractABI,
-            functionName: 'getUSDValue',
-            args: [market.address, 1e8],
-        },
-        cTokenAddress: {
-            address: lendingContractAddress,
-            abi: lendingContractABI,
-            functionName: 's_tokenToCToken',
-            args: [market.address],
-        },
-        totalCollateral: {
-            address: market.address,
-            abi: cTokenABI,
-            functionName: 'balanceOf',
-            args: [market.cTokenAddress],
-        },
-        userSupply: {
-            address: market.cTokenAddress,
-            abi: cTokenABI,
-            functionName: 'balanceOfUnderlying',
-            args: [address],
-        },
-        userBorrow: {
-            address: market.cTokenAddress,
-            abi: cTokenABI,
-            functionName: 'borrowBalanceCurrent',
-            args: [address],
-        },
+        cTokenData: CTOKEN_FUNCTIONS.map(functionName =>
+            createCTokenCall(market.cTokenAddress, functionName)
+        ),
+        usdValue: createLendingCall('getUSDValue', [market.address, 1e8]),
+        cTokenAddress: createLendingCall('s_tokenToCToken', [market.address]),
+        totalCollateral: createBaseContractCall(
+            market.address,
+            cTokenABI,
+            'balanceOf',
+            [market.cTokenAddress]
+        ),
+        userSupply: createCTokenCall(
+            market.cTokenAddress,
+            'balanceOfUnderlying',
+            [address]
+        ),
+        userBorrow: createCTokenCall(
+            market.cTokenAddress,
+            'borrowBalanceCurrent',
+            [address]
+        ),
     })),
-    // TODO separate this data to user
-    accountInfo: {
-        address: lendingContractAddress,
-        abi: lendingContractABI,
-        functionName: 'getAccountInformation',
-        args: [address],
-    },
-    healthFactor: {
-        address: lendingContractAddress,
-        abi: lendingContractABI,
-        functionName: 'healthFactor',
-        args: [address],
-    },
+    accountInfo: createLendingCall('getAccountInformation', [address]),
+    healthFactor: createLendingCall('healthFactor', [address]),
 });
 
 export const flattenCalls = (contractCalls) => [
