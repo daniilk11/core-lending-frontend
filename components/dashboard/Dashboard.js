@@ -15,7 +15,8 @@ import DashboardContent from './DashboardContent';
 const DEFAULT_PROCESSED_DATA = {
     userPositions: {},
     overallPosition: {},
-    marketsData: {}
+    marketsData: {},
+    accountInfo: {},
 };
 
 export default function Dashboard() {
@@ -55,6 +56,7 @@ export default function Dashboard() {
                     market={modalState.selectedMarket}
                     activeTabName={modalState.activeTab}
                     healthFactor={processedData.overallPosition.healthFactor}
+                    accountInfo={processedData.accountInfo}
                 />
             )}
         </>

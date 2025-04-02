@@ -8,7 +8,7 @@ const AssetRow = ({
   borrowed,
   rewards,
   Logo,
-  apy,
+  apr,
   onViewDetails,
 }) => (
   <tr className="hover:bg-purple-50 transition-colors">
@@ -45,7 +45,7 @@ const AssetRow = ({
 
     <td className="p-3 border-b">
       <div className="font-mono text-black">
-        {(Number(apy) || 0).toFixed(2)}%
+        {(Number(apr) || 0).toFixed(2)}%
       </div>
     </td>
 

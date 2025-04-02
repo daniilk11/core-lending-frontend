@@ -4,7 +4,8 @@ import React from "react";
 import Image from "next/image";
 import AssetRow from "./AssetRow";
 import WethLogo from "../../asserts/weth_logo.svg";
-import LinkLogo from "../../asserts/usdc_logo.svg";
+import UsdcLogo from "../../asserts/usdc_logo.svg";
+import LinkLogo from "../../asserts/chainlink_logo.png";
 
 // Create components for each logo
 const LogoComponents = {
@@ -29,7 +30,7 @@ const LogoComponents = {
   ),
   USDC: ({ className }) => (
     <Image
-      src={LinkLogo}
+      src={UsdcLogo}
       alt="USDC Logo"
       className={className}
       width={24}
@@ -51,7 +52,7 @@ const PositionsTable = ({ userPositions, onViewDetails }) => (
             <th className="text-left p-3 font-semibold">Type</th>
             <th className="text-left p-3 font-semibold">Supplied</th>
             <th className="text-left p-3 font-semibold">Borrowed</th>
-            <th className="text-left p-3 font-semibold">APY</th>
+            <th className="text-left p-3 font-semibold">APR</th>
             <th className="text-left p-3 font-semibold">Rewards</th>
             <th className="text-center p-3 font-semibold">Action</th>
           </tr>
@@ -67,7 +68,7 @@ const PositionsTable = ({ userPositions, onViewDetails }) => (
               borrowed={data.borrowed}
               rewards={0}
               Logo={LogoComponents[asset]}
-              apy={data.apy}
+              apr={data.supplyAPR}
               onViewDetails={onViewDetails}
             />
           ))}

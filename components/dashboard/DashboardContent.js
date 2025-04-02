@@ -1,5 +1,4 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import OverallPosition from './OverallPosition';
 import PositionsTable from './PositionsTable';
 
@@ -19,12 +18,3 @@ export default function DashboardContent({ processedData, onViewDetails }) {
         </div>
     );
 }
-
-DashboardContent.propTypes = {
-    processedData: PropTypes.shape({
-        userPositions: PropTypes.object,
-        overallPosition: PropTypes.object,
-        marketsData: PropTypes.object
-    }).isRequired,
-    onViewDetails: PropTypes.func.isRequired
-}; 
