@@ -1,156 +1,148 @@
-import React, {useEffect, useState} from "react";
-import {useWriteContract} from "wagmi";
-import {parseUnits} from "viem";
-import {contractABI, lendingContractAddress} from "../../../config/config";
-import {toast} from "react-toastify";
+import React, { useState, useEffect, useMemo } from "react";
+import { parseUnits } from "viem";
+import { toast } from "react-toastify";
 import InputModal from "../InputModal";
-import DetailsSection from "./DetailsSection";
 import ButtonModal from "../ButtonModal";
+import useWithdraw from "../../../hooks/useWithdraw";
+import DetailsSection from "./DetailsSection";
+import { formatNumberToFixed, calculateUSDPrice } from "../../../utils/format";
+import {
+    calculateNewHealthFactor, isValidAmount,
+} from "../../../utils/utils";
 
-const WithdrawTab = ({ market, address, healthFactor, openConnectModal }) => {
-    const [amount, setAmount] = useState('0.00');
-    const [canWithdraw, setCanWithdraw] = useState(false);
-    const [withdrawLimit, setWithdrawLimit] = useState(parseFloat(market?.totalSupply) || 0);
+const WithdrawTab = ({ market, address, openConnectModal, accountInfo }) => {
+  const [amount, setAmount] = useState("0.0");
+  const [canWithdraw, setCanWithdraw] = useState(false);
 
-    const handleAmountChange = (e) => {
-        const inputValue = e.target.value;
-        const regex = /^\d*\.?\d{0,18}$/;
+  const {
+    handleWithdraw,
+    isWithdrawing,
+    isWithdrawSuccess,
+    isWithdrawError,
+    withdrawError,
+    userSupplied,
+    maxWithdrawableAmount,
+  } = useWithdraw(market, address);
 
-        if (regex.test(inputValue) && inputValue >= 0) {
-            setAmount(inputValue);
+  const handleAmountChange = (e) => {
+    const inputValue = e.target.value;
+    const regex = /^\d*\.?\d{0,18}$/;
 
-            // Check if withdrawal would maintain health factor and is within limits
-            const newHealthFactor = calculateNewHealthFactor(inputValue);
-            if (parseFloat(inputValue) !== 0 &&
-                parseFloat(inputValue) <= withdrawLimit &&
-                newHealthFactor >= 1.0) {
-                setCanWithdraw(true);
-            } else {
-                setCanWithdraw(false);
-            }
-        }
-    };
+    if (regex.test(inputValue) && inputValue >= 0) {
+      setAmount(inputValue);
+    }
+  };
 
-    const calculateNewHealthFactor = (withdrawAmount) => {
-        const amountInAsset = parseFloat(withdrawAmount) || 0;
-        const newTotalCollateral = parseFloat(market?.totalSupply) - amountInAsset;
+  const handleWithdrawClick = async () => {
+    if (!address) {
+      openConnectModal?.();
+      return;
+    }
+    const amountInWei = parseUnits(amount, market.decimals);
+    await handleWithdraw(amountInWei);
+  };
 
-        // If there are no borrows, health factor is maximum
-        if (parseFloat(market?.totalBorrows) === 0) {
-            return Number.MAX_SAFE_INTEGER;
-        }
+  useEffect(() => {
+    if (isWithdrawSuccess) {
+      toast.success("Withdraw successful!");
+    }
+    if (isWithdrawError) {
+      const errorMessage = withdrawError?.message.includes(
+        "User rejected the request"
+      )
+        ? "User rejected the request."
+        : `Error withdrawing tokens: ${withdrawError?.message}`;
+      toast.error(`Error withdrawing tokens: ${errorMessage}`);
+    }
+  }, [isWithdrawSuccess, isWithdrawError, withdrawError]);
 
-        // Calculate new health factor after withdrawal
-        // (remaining collateral * LTV) / total borrows
-        return ((newTotalCollateral * market?.ltv / 100) / market?.totalBorrows) * 100;
-    };
-
-    const {
-        writeContract: writeWithdraw,
-        isLoading: isWithdrawing,
-        isSuccess: isWithdrawSuccess,
-        isError: isWithdrawError,
-        error: withdrawError
-    } = useWriteContract();
-
-    const handleWithdraw = async () => {
-        if (!address) {
-            openConnectModal?.();
-            return;
-        }
-
-        // Convert cToken amount based on exchange rate
-        // Assuming exchange rate is 1:1 for simplicity - adjust based on your actual exchange rate
-        const cTokenAmount = parseUnits(amount, market.decimals);
-
-        try {
-            await writeWithdraw({
-                address: lendingContractAddress,
-                abi: contractABI,
-                functionName: 'withdraw',
-                args: [market?.address, cTokenAmount],
-            });
-        } catch (error) {
-            toast.error("Withdraw transaction failed");
-        }
-    };
-
-    useEffect(() => {
-        if (isWithdrawSuccess) {
-            toast.success('Withdraw successful!');
-            // Update withdrawal limit after successful withdrawal
-            setWithdrawLimit(parseFloat(market?.totalSupply) - parseFloat(amount));
-            setAmount('0.00'); // Reset input after successful withdrawal
-        }
-        if (isWithdrawError) {
-            const errorMessage = withdrawError?.message.includes("User rejected the request")
-                ? "User rejected the request."
-                : `Error withdrawing tokens: ${withdrawError?.message}`;
-            toast.error(errorMessage);
-        }
-    }, [isWithdrawSuccess, isWithdrawError, withdrawError]);
-
-    const maxWithdrawableAmount = Math.min(
-        withdrawLimit,
-        market?.totalBorrows ? (withdrawLimit * market?.ltv / 100) : withdrawLimit
+  useEffect(() => {
+    setCanWithdraw(
+        isValidAmount({
+        amount,
+            maxAmount: maxWithdrawableAmount,
+      })
     );
+  }, [amount, maxWithdrawableAmount]);
 
-    const details = [
-        {
-            label: "Available to Withdraw",
-            value: `${maxWithdrawableAmount.toFixed(6)} ${market.asset}`
-        },
-        {
-            label: "",
-            value: `$${(maxWithdrawableAmount * market.price).toFixed(2)}`
-        },
-        {
-            label: "Current Supply Balance",
-            value: `${market?.totalSupply || 0} ${market.asset}`
-        },
-        {
-            label: "",
-            value: `$${((market?.totalSupply || 0) * market.price).toFixed(2)}`
-        },
-        {
-            label: "New Health Factor",
-            value: calculateNewHealthFactor(amount).toFixed(2)
-        },
-        {
-            label: "Remaining Supply After Withdrawal",
-            value: `${Math.max(0, (market?.totalSupply || 0) - parseFloat(amount))} ${market.asset}`
-        },
-        {
-            label: "",
-            value: `$${(Math.max(0, (market?.totalSupply || 0) - parseFloat(amount)) * market.price).toFixed(2)}`
-        },
-        {
-            label: "Supply APY",
-            value: `${market?.supplyApy || 0}%`
-        }
-    ];
+  const details = useMemo(
+    () => [
+      {
+        label: "Available to Withdraw",
+        value: `${formatNumberToFixed(maxWithdrawableAmount)} ${market.asset}`,
+      },
+      {
+        label: "",
+        value: `$${calculateUSDPrice(maxWithdrawableAmount, market.price)}`,
+      },
+      {
+        label: "Current Supply Balance",
+        value: `${formatNumberToFixed(userSupplied || 0)} ${market.asset}`,
+      },
+      {
+        label: "",
+        value: `$${calculateUSDPrice(userSupplied || 0, market.price)}`,
+      },
+      {
+        label: "New Health Factor",
+        value: calculateNewHealthFactor(
+          amount,
+          accountInfo,
+          market.price,
+          "decrease"
+        ).toFixed(2),
+      },
+      {
+        label: "Remaining Supply After Withdrawal",
+        value: `${formatNumberToFixed(
+          Math.max(0, (userSupplied || 0) - parseFloat(amount))
+        )} ${market.asset}`,
+      },
+      {
+        label: "",
+        value: `$${calculateUSDPrice(
+          Math.max(0, (userSupplied || 0) - parseFloat(amount)),
+          market.price
+        )}`,
+      },
+      {
+        label: "Supply APY",
+        value: `${market?.supplyAPR || 0}%`,
+      },
+    ],
+    [
+      amount,
+      userSupplied,
+      market.asset,
+      market.price,
+      market.supplyAPR,
+      maxWithdrawableAmount,
+      accountInfo,
+      market,
+    ]
+  );
 
-    return (
-        <div className="space-y-4">
-            <InputModal
-                handleAmountChange={handleAmountChange}
-                name={"Amount to withdraw"}
-                asset={market.asset}
-                amount={amount}
-                price={market.price}
-                maxAmount={maxWithdrawableAmount}
-            />
-            <DetailsSection details={details} />
-            <ButtonModal
-                address={address}
-                isDisabled={!canWithdraw}
-                isProcessing={isWithdrawing}
-                openConnectModal={openConnectModal}
-                buttonLabel={isWithdrawing ? 'Withdrawing...' : 'Withdraw'}
-                handleAction={handleWithdraw}
-            />
-        </div>
-    );
+  return (
+    <div className="space-y-4">
+      <InputModal
+        handleAmountChange={handleAmountChange}
+        name={"Amount to withdraw"}
+        asset={market.asset}
+        amount={amount}
+        price={market.price}
+        maxAmount={maxWithdrawableAmount}
+      />
+      <DetailsSection details={details} />
+      <ButtonModal
+        address={address}
+        isDisabled={!canWithdraw}
+        isProcessing={isWithdrawing}
+        openConnectModal={openConnectModal}
+        buttonLabel={isWithdrawing ? "Withdrawing..." : "Withdraw"}
+        handleAction={handleWithdrawClick}
+      />
+    </div>
+  );
 };
 
 export default WithdrawTab;

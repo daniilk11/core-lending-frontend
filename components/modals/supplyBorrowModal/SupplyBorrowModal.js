@@ -1,15 +1,15 @@
-import React, {useState, useEffect} from 'react';
-import {useConnectModal} from '@rainbow-me/rainbowkit';
+import React, { useState, useEffect } from 'react';
+import { useConnectModal } from '@rainbow-me/rainbowkit';
 import SupplyTab from './SupplyTab';
 import BorrowTab from './BorrowTab';
-import {useAccount} from "wagmi";
+import { useAccount } from "wagmi";
 import RepayTab from "./RepayTab";
 import WithdrawTab from "./WithdrawTab";
 
-const SupplyBorrowModal = ({isOpen, onClose, market, healthFactor, activeTabName = 'supply'}) => {
+const SupplyBorrowModal = ({ isOpen, onClose, market, healthFactor, activeTabName = 'supply', accountInfo }) => {
     const [activeTab, setActiveTab] = useState(activeTabName);
-    const {address} = useAccount();
-    const {openConnectModal} = useConnectModal();
+    const { address } = useAccount();
+    const { openConnectModal } = useConnectModal();
 
     useEffect(() => {
         if (isOpen) {
@@ -75,24 +75,24 @@ const SupplyBorrowModal = ({isOpen, onClose, market, healthFactor, activeTabName
                     <BorrowTab
                         market={market}
                         address={address}
-                        healthFactor={healthFactor}
                         openConnectModal={openConnectModal}
+                        accountInfo={accountInfo}
                     />
                 )}
                 {activeTab === 'repay' && (
                     <RepayTab
                         market={market}
                         address={address}
-                        healthFactor={healthFactor}
                         openConnectModal={openConnectModal}
+                        accountInfo={accountInfo}
                     />
                 )}
                 {activeTab === 'withdraw' && (
                     <WithdrawTab
                         market={market}
                         address={address}
-                        healthFactor={healthFactor}
                         openConnectModal={openConnectModal}
+                        accountInfo={accountInfo}
                     />
                 )}
             </div>
