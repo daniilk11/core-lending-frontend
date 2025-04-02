@@ -5,48 +5,47 @@ import { createContractCalls, flattenCalls } from "../config/contractCallsConfig
 import { mockConfig, mockBlockchainData } from '../lib/mockData';
 
 const useGetDataFromBlockChain = (address, formatFunction) => {
-    const { flattenedCalls } = useMemo(() => ({
-        flattenedCalls: address ? flattenCalls(createContractCalls(address)) : []
-    }), [address]);
+    const [isErrorState, setIsError] = useState(false);
+    const [isLoadingState, setIsLoading] = useState(false);
+    const [processedDataState, setProcessedData] = useState(null);
 
-    // Add refetchKey to trigger manual refreshes
-    const [refetchKey, setRefetchKey] = useState(0);
+    // Check test mode first
+    const isTestMode = mockConfig.isTestMode;
+
+    // Only create contract calls if not in test mode
+    const { flattenedCalls } = useMemo(() => ({
+        flattenedCalls: !isTestMode && address ? flattenCalls(createContractCalls(address)) : []
+    }), [address, isTestMode]);
 
     const { data, isError, refetch } = useReadContracts({
         contracts: flattenedCalls,
         watch: true,
-        enabled: !!address,
+        enabled: !isTestMode && !!address,
     });
-
-
-    // todo delete Memoize processed data to prevent unnecessary recalculations
-    const processedData = useMemo(() =>
-        address && data ? formatFunction(data) : null
-        ,
-        [address, data, formatFunction]);
-
-    const [isErrorState, setIsError] = useState(false);
-    const [isLoadingState, setIsLoading] = useState(false);
-    const [processedDataState, setProcessedData] = useState(null);
 
     // Manual refresh function
     const refresh = useCallback(async () => {
         if (!address) return;
         setIsLoading(true);
         try {
-            await refetch();
+            if (isTestMode) {
+                setProcessedData(formatFunction(mockBlockchainData));
+            } else {
+                await refetch();
+            }
         } catch (error) {
             console.error('Error refreshing data:', error);
             setIsError(true);
         } finally {
             setIsLoading(false);
         }
-    }, [address, refetch]);
+    }, [address, refetch, isTestMode, formatFunction]);
 
     useEffect(() => {
-        if (mockConfig.isTestMode) {
+        if (isTestMode) {
             setProcessedData(formatFunction(mockBlockchainData));
             setIsLoading(false);
+            setIsError(false);
             return;
         }
 
@@ -59,7 +58,7 @@ const useGetDataFromBlockChain = (address, formatFunction) => {
         }
 
         setIsError(isError);
-    }, [address, data, isError, formatFunction, refetchKey]);
+    }, [address, data, isError, formatFunction, isTestMode]);
 
     return {
         isError: isErrorState,
