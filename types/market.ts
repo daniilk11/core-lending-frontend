@@ -6,6 +6,6 @@ export interface MarketData {
     decimals: number;
     totalSupply: number;
     totalBorrows: number;
-    supplyApy: number;
-    borrowApy: number;
+    supplyAPR: number;
+    borrowAPR: number;
 }

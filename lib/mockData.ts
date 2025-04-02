@@ -19,7 +19,7 @@ export const mockConfig = {
 
 export const mockBlockchainData = [
    // Market 1 (WETH)
-   { result: BigInt('100000000000000000000') },    // totalCollateral
+   { result: BigInt('100000000000000000000') },    // totalSupply
    { result: BigInt('50000000000000000000') },     // totalBorrows
    { result: BigInt('1000000000000000000') },      // exchangeRate
    { result: BigInt('200000000000') },             // price - $2000 (8 decimals)
@@ -29,7 +29,7 @@ export const mockBlockchainData = [
    { result: BigInt('450000000000000000') },       // borrowRatePerBlock
    
    // Market 2 (LINK)
-   { result: BigInt('1000000000000000000000') },   // totalCollateral
+   { result: BigInt('1000000000000000000000') },   // totalSupply
    { result: BigInt('500000000000000000000') },    // totalBorrows
    { result: BigInt('1000000000000000000') },      // exchangeRate
    { result: BigInt('1700000000') },               // price - $17 (8 decimals)
@@ -39,7 +39,7 @@ export const mockBlockchainData = [
    { result: BigInt('400000000000000000') },       // borrowRatePerBlock
    
    // Market 3 (USDC)
-   { result: BigInt('1000000000000000000000') },    // totalCollateral
+   { result: BigInt('1000000000000000000000') },    // totalSupply
    { result: BigInt('500000000000000000000') },    // totalBorrows
    { result: BigInt('1000000000000000000') },      // exchangeRate
    { result: BigInt('100000000') },                // price - $1 (8 decimals)
@@ -50,8 +50,8 @@ export const mockBlockchainData = [
 
   // Account info array - make sure these values match your expected format
   { result: [
-    BigInt('1650000000000000000000'),  // borrowedValue
-    BigInt('2200000000000000000000')   // collateralValue
+    BigInt('90000000000000000000'),  // borrowedValue
+    BigInt('2000000000000000000000')   // collateralValue
   ]},
-  { result: BigInt('2000000000000000000') }  // healthFactor
+  { result: BigInt('150000000') }  // healthFactor
 ];
