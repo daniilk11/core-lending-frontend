@@ -1,13 +1,14 @@
-import {useBalance, useReadContract, useWriteContract} from 'wagmi';
-import { erc20ABI, lendingContractAddress} from "../config/config";
+import { useBalance, useReadContract, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
+import { erc20ABI, lendingContractAddress } from "../config/config";
+import { useEffect } from 'react';
 
-const useApprove= (market, address) => {
+const useApprove = (market, address, isSupplySuccess) => {
 
-    const {data: userBalance} = useBalance({
+    const { data: userBalance } = useBalance({
         address, token: market?.address
     });
 
-    const {data: userAllowance} = useReadContract({
+    const { data: userAllowance, refetch: refetchAllowance } = useReadContract({
         address: market?.address,
         abi: erc20ABI,
         functionName: 'allowance',
@@ -17,11 +18,20 @@ const useApprove= (market, address) => {
 
     const {
         writeContract: writeApprove,
+        data: hash,
         isLoading: isApproving,
         isSuccess: isApproveSuccess,
         isError: isApproveError,
         error: approveError
     } = useWriteContract();
+
+    const {
+        isLoading: isConfirming,
+        isSuccess: isConfirmed,
+    } = useWaitForTransactionReceipt({
+        hash,
+        confirmations: 1, // Wait for 1 block confirmation
+    });
 
     const handleWriteApproveSpending = async (amountInWei) => {
         const config = {
@@ -33,11 +43,17 @@ const useApprove= (market, address) => {
         await writeApprove(config);
     };
 
+    useEffect(() => {
+        if (isConfirmed || isSupplySuccess) {
+            refetchAllowance();
+        }
+    }, [isConfirmed, isSupplySuccess]);
+
     return {
         userBalance,
         userAllowance,
         handleWriteApproveSpending,
-        isApproving,
+        isApproving: isApproving || isConfirming,
         isApproveSuccess,
         isApproveError,
         approveError

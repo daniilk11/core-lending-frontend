@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import {initialMarketsData} from "../config/config";
+import { initialMarketsData } from "../config/config";
 
 export const useMarketState = () => {
     const [markets, setMarkets] = useState(initialMarketsData);
@@ -17,5 +17,5 @@ export const useMarketState = () => {
         });
     };
 
-    return { markets, setMarkets,  marketsOverView, updateAssetValues };
+    return { markets, setMarkets, marketsOverView, updateAssetValues };
 };
