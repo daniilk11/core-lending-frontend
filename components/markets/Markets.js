@@ -15,8 +15,7 @@ import MarketsContent from './MarketsContent';
 const DEFAULT_PROCESSED_DATA = {
     updatedMarkets: [],
     healthFactor: 0,
-    allSuppliedAssetsValue: 0,
-    allBorrowedAssetsValue: 0,
+    marketsOverView: {},
     accountInfo: []
 };
 
@@ -43,18 +42,12 @@ export default function Markets() {
     const handleViewDetails = (market) => {
         openModal(market);
     };
-    //  transfer this to format
-    const marketsOverView = {
-        allSuppliedAssetsValue: processedData.allSuppliedAssetsValue,
-        allBorrowedAssetsValue: processedData.allBorrowedAssetsValue,
-        marketsSize: processedData.allSuppliedAssetsValue + processedData.allBorrowedAssetsValue,
-    };
 
     return (
         <>
             <MarketsContent
                 markets={processedData.updatedMarkets}
-                marketsOverView={marketsOverView}
+                marketsOverView={processedData.marketsOverView}
                 onViewDetails={handleViewDetails}
             />
             {modalState.selectedMarket && (

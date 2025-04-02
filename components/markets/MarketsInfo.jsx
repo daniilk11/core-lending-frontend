@@ -6,7 +6,7 @@ const MarketsInfo = ({ marketsOverView }) => (
         <MarketCard title="Markets Size" value={marketsOverView.marketsSize}/>
         <MarketCard title="Total Supply" value={marketsOverView.allSuppliedAssetsValue}/>
         <MarketCard title="Total Borrow" value={marketsOverView.allBorrowedAssetsValue}/>
-        <MarketCard title="Reserve" value={0}/> {/* TODO: change marketsData.reserve */}
+        <MarketCard title="Reserve" value={marketsOverView.allReservedAssetsValue} /> 
     </div>
 );
 

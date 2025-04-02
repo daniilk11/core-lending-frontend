@@ -9,13 +9,13 @@ const MarketRow = ({ market, onViewDetails }) => (
       </div>
     </td>
     <td className="p-3 cursor-pointer">{market.ltv}</td>
-    <td className="p-3 cursor-pointer">{market.supplyApy}%</td>
+    <td className="p-3 cursor-pointer">{market.supplyAPR}%</td>
     <td className="p-3 cursor-pointer">
       <div className="text-sm text-purple-600">
         {market.totalSupplyUnderlying} {market.asset}
       </div>
     </td>
-    <td className="p-3 cursor-pointer">{market.borrowApy}%</td>
+    <td className="p-3 cursor-pointer">{market.borrowAPR}%</td>
     <td className="p-3 cursor-pointer">
       <div className="text-sm text-purple-600">
         {market.totalBorrows} {market.asset}
