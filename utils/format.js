@@ -39,7 +39,7 @@ export function calculateUSDPrice(amount, price, decimals = 2) {
 
 // to our initial static market data we are adding new data from blockchain  todo to config
 const ITEMS_PER_MARKET = 10; // todo check errs  when 2 markets
-const PRICE_DECIMALS = 8;
+const PRICE_DECIMALS = 18;
 const HEALTH_FACTOR_DECIMALS = 10;
 
 export const formatContractDataForMarkets = (rawData) => {
@@ -59,9 +59,9 @@ export const formatContractDataForMarkets = (rawData) => {
     const updatedMarkets = initialMarketsData.map((market, index) => {
         const offset = index * ITEMS_PER_MARKET;
 
-        market.totalSupply = formatBigInt(rawData[offset]?.result, 18, 5);
-        market.totalBorrows = Number(formatBigInt(rawData[offset + 1]?.result, 18, 5));
-        market.totalReserve = formatBigInt(rawData[offset + 4]?.result, 18, 5);
+        market.totalSupply = formatBigInt(rawData[offset]?.result, market.decimals, 5);
+        market.totalBorrows = Number(formatBigInt(rawData[offset + 1]?.result, market.decimals, 5));
+        market.totalReserve = formatBigInt(rawData[offset + 4]?.result, market.decimals, 5);
 
         market.supplyAPR = formatBigInt(rawData[offset + 3]?.result, 16);
         market.borrowAPR = formatBigInt(rawData[offset + 5]?.result, 16);
@@ -69,8 +69,8 @@ export const formatContractDataForMarkets = (rawData) => {
         market.exchangeRate = Number(formatBigInt(rawData[offset + 2]?.result));
         market.price = Number(formatBigInt(rawData[offset + 6]?.result, PRICE_DECIMALS));
         market.cTokenAddress = rawData[offset + 7]?.result;
-        market.userSupplied = Number(formatUnits(rawData[offset + 8]?.result || BigInt(0), 18));
-        market.userBorrowed = Number(formatUnits(rawData[offset + 9]?.result || BigInt(0), 18));
+        market.userSupplied = Number(formatUnits(rawData[offset + 8]?.result || BigInt(0), market.decimals));
+        market.userBorrowed = Number(formatUnits(rawData[offset + 9]?.result || BigInt(0), market.decimals));
 
         // Total Supply in underlying tokens
         market.totalSupplyUnderlying = market.totalSupply * market.exchangeRate;
@@ -124,9 +124,9 @@ export const formatContractDataForDashboard = (rawData) => {
     initialMarketsData.forEach((market, index) => {
         const offset = index * ITEMS_PER_MARKET;
 
-        market.totalSupply = Number(formatBigInt(rawData[offset].result, 18, 5));
-        market.totalBorrows = Number(formatBigInt(rawData[offset + 1].result, 18, 5));
-        market.totalReserve = formatBigInt(rawData[offset + 4].result, 18, 5);
+        market.totalSupply = Number(formatBigInt(rawData[offset].result, market.decimals, 5));
+        market.totalBorrows = Number(formatBigInt(rawData[offset + 1].result, market.decimals, 5));
+        market.totalReserve = formatBigInt(rawData[offset + 4].result, market.decimals, 5);
 
         market.supplyAPR = formatBigInt(rawData[offset + 3].result, 16);
         market.borrowAPR = formatBigInt(rawData[offset + 5].result, 16);
@@ -134,8 +134,8 @@ export const formatContractDataForDashboard = (rawData) => {
         market.exchangeRate = Number(formatBigInt(rawData[offset + 2].result));
         const price = Number(formatBigInt(rawData[offset + 6].result, PRICE_DECIMALS));
         market.cTokenAddress = rawData[offset + 7].result;
-        market.userSupplied = Number(formatUnits(rawData[offset + 8]?.result, 18) || 0);
-        market.userBorrowed = Number(formatUnits(rawData[offset + 9]?.result, 18) || 0);
+        market.userSupplied = Number(formatUnits(rawData[offset + 8]?.result, market.decimals) || 0);
+        market.userBorrowed = Number(formatUnits(rawData[offset + 9]?.result, market.decimals) || 0);
 
         // Total Supply in underlying tokens
         market.totalSupplyUnderlying = market.totalSupply * market.exchangeRate;
@@ -150,7 +150,6 @@ export const formatContractDataForDashboard = (rawData) => {
             supplied: market.userSupplied,
             borrowed: market.userBorrowed,
             price,
-            apy: 0, // TODO CHECK THIS DEELETE
             supplyAPR: market.supplyAPR,
             borrowAPR: market.borrowAPR,
         };

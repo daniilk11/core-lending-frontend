@@ -25,7 +25,7 @@ export const createContractCalls = (address, markets = initialMarketsData) => ({
             createCTokenCall(market.cTokenAddress, functionName)
         ),
 
-        usdValue: createLendingCall('getUSDValue', [market.address, 1e8]),
+        usdValue: createLendingCall('getUSDValue', [market.address, BigInt(10) ** BigInt(market.decimals)]),
 
         cTokenAddress: createLendingCall('s_tokenToCToken', [market.address]),
 

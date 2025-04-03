@@ -60,6 +60,28 @@ const useBorrow = (market, address, accountInfo) => {
         watch: true,
     });
 
+    const {
+        data: totalSupply,
+        refetch: refetchTotalSupply
+    } = useReadContract({
+        address: market.cTokenAddress,
+        abi: cTokenABI,
+        functionName: 'totalSupply',
+        args: [],
+        watch: true,
+    });
+
+    const {
+        data: totalBorrows,
+        refetch: refetchTotalBorrows
+    } = useReadContract({
+        address: market.cTokenAddress,
+        abi: cTokenABI,
+        functionName: 'totalBorrows',
+        args: [],
+        watch: true,
+    });
+
     // Update account info and borrow limit when user data changes
     useEffect(() => {
         if (userData) {
@@ -68,17 +90,27 @@ const useBorrow = (market, address, accountInfo) => {
                 totalBorrowedValue: Number(formatUnits(userData[0], 18)),
             };
             setUpdatedAccountInfo(newAccountInfo);
-            setBorrowLimit(
-                calculateMaxBorrowAmount({ accountInfo: newAccountInfo, market })
-            );
+            if (totalSupply) {
+                const marketLiquidity = formatUnits(totalSupply, market.decimals) * market.exchangeRate - formatUnits(totalBorrows, market.decimals) - market.totalReserve;
+                setBorrowLimit(
+                    calculateMaxBorrowAmount(
+                        {
+                            accountInfo: newAccountInfo,
+                            assetPrice: market.price,
+                            marketLiquidity: marketLiquidity
+                        })
+                );
+            }
         }
-    }, [userData, market]);
+    }, [userData, totalSupply, totalBorrows, market]);
 
     // Refetch data after successful transaction
     useEffect(() => {
         if (isConfirmed) {
             refetchUserData();
             refetchUserBorrowData();
+            refetchTotalSupply();
+            refetchTotalBorrows();
         }
     }, [isConfirmed]);
 
@@ -89,7 +121,7 @@ const useBorrow = (market, address, accountInfo) => {
         isBorrowError,
         borrowError,
         borrowLimit,
-        userBorrowData: userBorrowData ? Number(formatUnits(userBorrowData, 18)) : 0,
+        userBorrowData: userBorrowData ? Number(formatUnits(userBorrowData, market.decimals)) : 0,
         updatedAccountInfo
     };
 };

@@ -1,4 +1,3 @@
-import { formatUnits } from 'viem';
 import { formatNumberToFixed } from './format';
 
 /**
@@ -9,18 +8,19 @@ import { formatNumberToFixed } from './format';
  * @param {Object} params.market - Market information including price and total borrows
  * @returns {number} New health factor after withdrawal
  */
-export function calculateNewHealthFactor(amount, accountInfo, assetPrice, amountAction = 'increase') {
+export function calculateNewHealthFactor(amount, accountInfo, assetPrice, ltv, amountAction = 'increase') {
     const amountInAsset = parseFloat(amount) || 0;
     let newTotalCollateral = accountInfo.totalCollateralValue;
     if (amountAction === 'increase') {
-        newTotalCollateral += amountInAsset * assetPrice
-    } else
-        newTotalCollateral -= amountInAsset * assetPrice;
-
-    // If there are no borrows, health factor is maximum
-    if (accountInfo.totalBorrowedValue === 0) {
-        return Number.MAX_SAFE_INTEGER;
+        newTotalCollateral += amountInAsset * assetPrice * ltv;
+    } else {
+        newTotalCollateral -= amountInAsset * assetPrice * ltv;
     }
+    if (newTotalCollateral < 0) return 0
+    if (accountInfo.totalBorrowedValue === 0) {
+        accountInfo.totalBorrowedValue = 0.00000000001
+    }
+
     return newTotalCollateral / accountInfo.totalBorrowedValue;
 }
 
@@ -37,9 +37,6 @@ export function calculateMaxWithdrawableAmount({ accountInfo, market, userSuppli
     if (accountInfo.totalBorrowedValue < 0.01) {
         return userSupplied;
     }
-    // 204849363161602
-    //     73489912208
-    //      1454007716
 
     // withdraw = collateral - borrows
     const maxWithdrawTokens = (accountInfo.totalCollateralValue - accountInfo.totalBorrowedValue) / market.price;
@@ -49,11 +46,11 @@ export function calculateMaxWithdrawableAmount({ accountInfo, market, userSuppli
 }
 
 
-export function calculateMaxBorrowAmount({ accountInfo, market }) {
+export function calculateMaxBorrowAmount({ accountInfo, assetPrice, marketLiquidity}) {
     // Convert USD amount to token amount
-    const maxBorrowTokens = (accountInfo.totalCollateralValue - accountInfo.totalBorrowedValue) / market.price;
+    const maxBorrowTokens = (accountInfo.totalCollateralValue - accountInfo.totalBorrowedValue) / assetPrice;
 
-    return formatNumberToFixed(Math.min(Math.max(0, maxBorrowTokens), market.availableLiquidity));
+    return formatNumberToFixed(Math.min(Math.max(0, maxBorrowTokens), marketLiquidity));
 }
 
 /**
@@ -63,7 +60,7 @@ export function calculateMaxBorrowAmount({ accountInfo, market }) {
  * @param {number} params.maxAmount - Maximum allowed withdrawal amount
  * @returns {boolean} Whether the withdrawal is valid
  */
-export function isValidAmount({ amount,maxAmount }) {
+export function isValidAmount({ amount, maxAmount }) {
     return parseFloat(amount) !== 0 &&
         parseFloat(amount) <= parseFloat(maxAmount);
 }
