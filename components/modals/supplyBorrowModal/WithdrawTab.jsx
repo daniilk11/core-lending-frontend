@@ -6,9 +6,7 @@ import ButtonModal from "../ButtonModal";
 import useWithdraw from "../../../hooks/useWithdraw";
 import DetailsSection from "./DetailsSection";
 import { formatNumberToFixed, calculateUSDPrice } from "../../../utils/format";
-import {
-    calculateNewHealthFactor, isValidAmount,
-} from "../../../utils/utils";
+import { calculateNewHealthFactor, isValidAmount } from "../../../utils/utils";
 
 const WithdrawTab = ({ market, address, openConnectModal, accountInfo }) => {
   const [amount, setAmount] = useState("0.0");
@@ -58,9 +56,9 @@ const WithdrawTab = ({ market, address, openConnectModal, accountInfo }) => {
 
   useEffect(() => {
     setCanWithdraw(
-        isValidAmount({
+      isValidAmount({
         amount,
-            maxAmount: maxWithdrawableAmount,
+        maxAmount: maxWithdrawableAmount,
       })
     );
   }, [amount, maxWithdrawableAmount]);
@@ -89,6 +87,7 @@ const WithdrawTab = ({ market, address, openConnectModal, accountInfo }) => {
           amount,
           accountInfo,
           market.price,
+          market.ltv,
           "decrease"
         ).toFixed(2),
       },

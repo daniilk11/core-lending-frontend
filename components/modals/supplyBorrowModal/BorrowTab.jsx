@@ -85,6 +85,7 @@ const BorrowTab = ({ market, address, openConnectModal, accountInfo }) => {
           amount,
           updatedAccountInfo || accountInfo,
           market.price,
+          market.ltv,
           "decrease"
         ).toFixed(2),
       },

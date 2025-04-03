@@ -94,7 +94,7 @@ const RepayTab = ({ market, address, openConnectModal, accountInfo }) => {
   useEffect(() => {
     if (isRepaySuccess) {
       toast.success("Repay successful!");
-      setAmount("0.00"); // Reset input after successful repayment
+      setAmount("0.00");
     }
     if (isRepayError) {
       const errorMessage = repayError?.message.includes(
@@ -115,15 +115,16 @@ const RepayTab = ({ market, address, openConnectModal, accountInfo }) => {
       label: "",
       value: `$${((repayLimit || 0) * market.price).toFixed(2)}`,
     },
-    {
-      label: "New Health Factor",
-      value: calculateNewHealthFactor(
-        amount,
-        accountInfo,
-        market.price,
-        "increase"
-      ).toFixed(2),
-    },
+    // {
+    //   label: "New Health Factor",
+    //   value: calculateNewHealthFactor(
+    //     amount,
+    //     accountInfo,
+    //     market.price,
+    //     market.ltv,
+    //     "increase"
+    //   ).toFixed(2),
+    // },
     {
       label: "Remaining Debt After Repayment",
       value: `${Math.max(
