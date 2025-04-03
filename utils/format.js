@@ -145,14 +145,15 @@ export const formatContractDataForDashboard = (rawData) => {
 
         totalSupplied += market.userSupplied * price;
         totalBorrowed += market.userBorrowed * price;
-
-        userPositions[market.asset] = {
-            supplied: market.userSupplied,
-            borrowed: market.userBorrowed,
-            price,
-            supplyAPR: market.supplyAPR,
-            borrowAPR: market.borrowAPR,
-        };
+        if (market.userBorrowed || market.userSupplied) {
+            userPositions[market.asset] = {
+                supplied: market.userSupplied,
+                borrowed: market.userBorrowed,
+                price,
+                supplyAPR: market.supplyAPR,
+                borrowAPR: market.borrowAPR,
+            };
+        }
 
         marketsData[market.asset] = {
             ...market,
