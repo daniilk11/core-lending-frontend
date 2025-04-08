@@ -4,26 +4,42 @@ import { useMemo, useEffect, useState, useCallback } from 'react';
 import { createContractCalls, flattenCalls } from "../config/contractCallsConfig";
 import { mockConfig, mockBlockchainData } from '../lib/mockData';
 
+/**
+ * Custom hook for fetching and processing blockchain data
+ * Handles both live blockchain data and mock data in test mode
+ * @param {string} address - User's wallet address
+ * @param {Function} formatFunction - Function to format the raw blockchain data
+ * @returns {Object} Blockchain data and state
+ * @returns {boolean} returns.isError - Whether there was an error fetching data
+ * @returns {boolean} returns.isLoading - Whether data is currently being fetched
+ * @returns {Object} returns.processedData - Formatted blockchain data
+ * @returns {Function} returns.refresh - Function to manually refresh the data
+ */
 const useGetDataFromBlockChain = (address, formatFunction) => {
+    // State for error handling, loading status, and processed data
     const [isErrorState, setIsError] = useState(false);
     const [isLoadingState, setIsLoading] = useState(false);
     const [processedDataState, setProcessedData] = useState(null);
 
-    // Check test mode first
+    // Check if we're in test mode
     const isTestMode = mockConfig.isTestMode;
 
-    // Only create contract calls if not in test mode
+    // Create contract calls configuration if not in test mode
     const { flattenedCalls } = useMemo(() => ({
         flattenedCalls: !isTestMode && address ? flattenCalls(createContractCalls(address)) : []
     }), [address, isTestMode]);
 
+    // Fetch data from blockchain using wagmi's useReadContracts
     const { data, isError, refetch } = useReadContracts({
         contracts: flattenedCalls,
         watch: true,
         enabled: !isTestMode && !!address,
     });
 
-    // Manual refresh function
+    /**
+     * Manual refresh function to update blockchain data
+     * Handles both test mode and live blockchain data
+     */
     const refresh = useCallback(async () => {
         if (!address) return;
         setIsLoading(true);
@@ -41,6 +57,7 @@ const useGetDataFromBlockChain = (address, formatFunction) => {
         }
     }, [address, refetch, isTestMode, formatFunction]);
 
+    // Update processed data and states when blockchain data changes
     useEffect(() => {
         if (isTestMode) {
             setProcessedData(formatFunction(mockBlockchainData));

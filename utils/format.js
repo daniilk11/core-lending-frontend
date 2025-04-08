@@ -1,17 +1,49 @@
 import { formatUnits } from "viem";
 import { initialMarketsData } from "../config/config";
 
+/** Number of data items per market in the raw data array */
+const ITEMS_PER_MARKET = 10;
+/** Number of decimals for price values */
+const PRICE_DECIMALS = 18;
+/** Number of decimals for health factor values */
+const HEALTH_FACTOR_DECIMALS = 10;
+/** Default number of decimals for token amounts */
+const DEFAULT_DECIMALS = 18;
+/** Default precision for number formatting */
+const DEFAULT_PRECISION = 2;
+
+
+
+// Utility functions
+/**
+ * Checks if a value is a valid bigint
+ * @param {unknown} num - The value to check
+ * @returns {boolean} - True if the value is a bigint
+ */
 export function isValidNumber(num) {
     return typeof num === 'bigint';
 }
 
-export function formatBigInt(bigInt, decimals = 18, precision = 2) {
+/**
+ * Formats a bigint value to a string with specified decimals and precision
+ * @param {bigint|null|undefined} bigInt - The bigint value to format
+ * @param {number} [decimals=18] - The number of decimals
+ * @param {number} [precision=2] - The precision to use
+ * @returns {string} - The formatted string
+ */
+export function formatBigInt(bigInt, decimals = DEFAULT_DECIMALS, precision = DEFAULT_PRECISION) {
     if (bigInt === undefined || bigInt === null) {
         return '0.00'; // or any default value you prefer
     }
     return Number(formatUnits(bigInt, decimals)).toFixed(precision);
 }
 
+/**
+ * Formats a number to a fixed number of decimal places
+ * @param {number|string} value - The value to format
+ * @param {number} [decimals=9] - The number of decimal places
+ * @returns {string} - The formatted string
+ */
 export function formatNumberToFixed(value, decimals = 9) {
     // Convert scientific notation or string to number
     const num = Number(value);
@@ -26,6 +58,13 @@ export function formatNumberToFixed(value, decimals = 9) {
     return fixed.replace(/\.?0+$/, '') || '0';
 }
 
+/**
+ * Calculates the USD price for an amount and price
+ * @param {number|string} amount - The amount
+ * @param {number|string} price - The price
+ * @param {number} [decimals=2] - The number of decimal places
+ * @returns {string} - The calculated USD price
+ */
 export function calculateUSDPrice(amount, price, decimals = 2) {
     const parsedAmount = parseFloat(amount);
     const parsedPrice = parseFloat(price);
@@ -37,13 +76,82 @@ export function calculateUSDPrice(amount, price, decimals = 2) {
     return (parsedAmount * parsedPrice).toFixed(decimals);
 }
 
-// to our initial static market data we are adding new data from blockchain  todo to config
-const ITEMS_PER_MARKET = 10; // todo check errs  when 2 markets
-const PRICE_DECIMALS = 18;
-const HEALTH_FACTOR_DECIMALS = 10;
+// Helper functions for data processing
+/**
+ * Extracts market data from raw data
+ * @param {RawDataItem[]} rawData - The raw data
+ * @param {Market} market - The market
+ * @param {number} index - The index
+ * @returns {Market} - The processed market
+ */
+function extractMarketData(rawData, market, index) {
+    const offset = index * ITEMS_PER_MARKET;
 
-export const formatContractDataForMarkets = (rawData) => {
-    // Return default values if no data
+    return {
+        ...market,
+        totalSupply: formatBigInt(rawData[offset]?.result, market.decimals, 5),
+        totalBorrows: Number(formatBigInt(rawData[offset + 1]?.result, market.decimals, 5)),
+        totalReserve: formatBigInt(rawData[offset + 4]?.result, market.decimals, 5),
+        supplyAPR: formatBigInt(rawData[offset + 3]?.result, 16),
+        borrowAPR: formatBigInt(rawData[offset + 5]?.result, 16),
+        exchangeRate: Number(formatBigInt(rawData[offset + 2]?.result)),
+        price: Number(formatBigInt(rawData[offset + 6]?.result, PRICE_DECIMALS)),
+        cTokenAddress: rawData[offset + 7]?.result,
+        userSupplied: Number(formatUnits(rawData[offset + 8]?.result || BigInt(0), market.decimals)),
+        userBorrowed: Number(formatUnits(rawData[offset + 9]?.result || BigInt(0), market.decimals)),
+    };
+}
+
+/**
+ * Calculates market metrics
+ * @param {Market} market - The market
+ * @returns {Market} - The market with calculated metrics
+ */
+function calculateMarketMetrics(market) {
+    // Total Supply in underlying tokens
+    market.totalSupplyUnderlying = Number(market.totalSupply) * market.exchangeRate;
+
+    // Available liquidity for borrowing and withdrawing
+    market.availableLiquidity = market.totalSupplyUnderlying - market.totalBorrows - Number(market.totalReserve);
+
+    return market;
+}
+
+/**
+ * Calculates market values
+ * @param {Market} market - The market
+ * @returns {{ suppliedValue: number, borrowedValue: number, reservedValue: number }} - The calculated values
+ */
+function calculateMarketValues(market) {
+    return {
+        suppliedValue: market.totalSupplyUnderlying * market.price,
+        borrowedValue: market.totalBorrows * market.price,
+        reservedValue: Number(market.totalReserve) * market.price,
+    };
+}
+
+/**
+ * Extracts account info from raw data
+ * @param {RawDataItem[]} rawData - The raw data
+ * @returns {AccountInfo} - The account info
+ */
+function extractAccountInfo(rawData) {
+    const accountData = rawData[rawData.length - 3]?.result || [BigInt(0), BigInt(0)];
+
+    return {
+        totalCollateralValue: Number(formatUnits(accountData[1], 18)),
+        totalBorrowedValue: Number(formatUnits(accountData[0], 18)),
+        totalUserRewards: Number(formatUnits(rawData[rawData.length - 1]?.result || BigInt(0), 18)),
+    };
+}
+
+// Main export functions
+/**
+ * Formats contract data for markets
+ * @param {RawDataItem[]|null} rawData - The raw data
+ * @returns {Object} - The formatted data
+ */
+export function formatContractDataForMarkets(rawData) {
     if (!rawData) {
         return {
             updatedMarkets: [],

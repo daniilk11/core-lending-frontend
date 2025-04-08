@@ -9,11 +9,22 @@ import useRepay from "../../../hooks/useRepay";
 import { isValidNumber } from "../../../utils/format";
 import { isValidAmount, calculateNewHealthFactor } from "../../../utils/utils";
 
+/**
+ * Component for handling token repayment operations in the lending protocol
+ * @param {Object} props - Component props
+ * @param {Object} props.market - Market information including token details and rates
+ * @param {string} props.address - User's wallet address
+ * @param {Function} props.openConnectModal - Function to open wallet connection modal
+ * @param {Object} props.accountInfo - User's account information including balances
+ * @returns {React.ReactElement} Repay tab component
+ */
 const RepayTab = ({ market, address, openConnectModal, accountInfo }) => {
+  // State for managing repay operation
   const [needApprove, setNeedApprove] = useState(false);
   const [canRepay, setCanRepay] = useState(false);
   const [amount, setAmount] = useState("0.00");
 
+  // Custom hooks for repay and approval operations
   const {
     handleWriteRepay,
     isRepaying,
@@ -33,6 +44,10 @@ const RepayTab = ({ market, address, openConnectModal, accountInfo }) => {
     approveError,
   } = useApprove(market, address, isRepaySuccess);
 
+  /**
+   * Handles input amount changes and validates the amount
+   * @param {React.ChangeEvent<HTMLInputElement>} e - Input change event
+   */
   const handleAmountChange = (e) => {
     const inputValue = e.target.value;
     const regex = /^\d*\.?\d{0,18}$/;
@@ -55,6 +70,9 @@ const RepayTab = ({ market, address, openConnectModal, accountInfo }) => {
     }
   };
 
+  /**
+   * Handles the repay operation including approval if needed
+   */
   const handleRepay = async () => {
     if (!address) {
       openConnectModal?.();
@@ -75,6 +93,7 @@ const RepayTab = ({ market, address, openConnectModal, accountInfo }) => {
     }
   };
 
+  // Handle approval success and error states
   useEffect(() => {
     if (isApproveSuccess) {
       toast.success("Successfully approved spending!");
@@ -91,6 +110,7 @@ const RepayTab = ({ market, address, openConnectModal, accountInfo }) => {
     }
   }, [isApproveSuccess, isApproveError, approveError]);
 
+  // Handle repay success and error states
   useEffect(() => {
     if (isRepaySuccess) {
       toast.success("Repay successful!");
@@ -106,6 +126,7 @@ const RepayTab = ({ market, address, openConnectModal, accountInfo }) => {
     }
   }, [isRepaySuccess, isRepayError, repayError]);
 
+  // Details section data for displaying repay information
   const details = [
     {
       label: "Available to Repay",
@@ -115,16 +136,6 @@ const RepayTab = ({ market, address, openConnectModal, accountInfo }) => {
       label: "",
       value: `$${((repayLimit || 0) * market.price).toFixed(2)}`,
     },
-    // {
-    //   label: "New Health Factor",
-    //   value: calculateNewHealthFactor(
-    //     amount,
-    //     accountInfo,
-    //     market.price,
-    //     market.ltv,
-    //     "increase"
-    //   ).toFixed(2),
-    // },
     {
       label: "Remaining Debt After Repayment",
       value: `${Math.max(
