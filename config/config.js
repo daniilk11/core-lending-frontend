@@ -8,6 +8,22 @@ export const lendingContractAddress = '0xbcFEC612270033B71d878de94f94F46C55B5b48
 export const WETH_ADDRESS = '0x4200000000000000000000000000000000000006'; // Base sepolia
 
 /**
+ * Formatting constants for data processing
+ */
+export const FORMAT_CONSTANTS = {
+    /** Number of data items per market in the raw data array */
+    ITEMS_PER_MARKET: 10,
+    /** Number of decimals for price values */
+    PRICE_DECIMALS: 18,
+    /** Number of decimals for health factor values */
+    HEALTH_FACTOR_DECIMALS: 10,
+    /** Default number of decimals for token amounts */
+    DEFAULT_DECIMALS: 18,
+    /** Default precision for number formatting */
+    DEFAULT_PRECISION: 2,
+};
+
+/**
  * Initial configuration data for supported lending markets
  * Each market represents a supported asset with its lending parameters
  * @constant {Array<{

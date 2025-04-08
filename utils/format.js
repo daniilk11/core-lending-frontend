@@ -1,20 +1,17 @@
 import { formatUnits } from "viem";
-import { initialMarketsData } from "../config/config";
+import { initialMarketsData, FORMAT_CONSTANTS } from "../config/config";
 
-/** Number of data items per market in the raw data array */
-const ITEMS_PER_MARKET = 10;
-/** Number of decimals for price values */
-const PRICE_DECIMALS = 18;
-/** Number of decimals for health factor values */
-const HEALTH_FACTOR_DECIMALS = 10;
-/** Default number of decimals for token amounts */
-const DEFAULT_DECIMALS = 18;
-/** Default precision for number formatting */
-const DEFAULT_PRECISION = 2;
+// Destructure constants for easier access
+const {
+    ITEMS_PER_MARKET,
+    PRICE_DECIMALS,
+    HEALTH_FACTOR_DECIMALS,
+    DEFAULT_DECIMALS,
+    DEFAULT_PRECISION
+} = FORMAT_CONSTANTS;
 
+// ===== Utility Functions =====
 
-
-// Utility functions
 /**
  * Checks if a value is a valid bigint
  * @param {unknown} num - The value to check
@@ -22,6 +19,16 @@ const DEFAULT_PRECISION = 2;
  */
 export function isValidNumber(num) {
     return typeof num === 'bigint';
+}
+
+/**
+ * Safely formats a bigint value to a number with specified decimals
+ * @param {bigint|null|undefined} value - The bigint value to format
+ * @param {number} decimals - The number of decimals
+ * @returns {number} - The formatted number
+ */
+function safeFormatUnits(value, decimals) {
+    return Number(formatUnits(value || BigInt(0), decimals));
 }
 
 /**
@@ -76,7 +83,8 @@ export function calculateUSDPrice(amount, price, decimals = 2) {
     return (parsedAmount * parsedPrice).toFixed(decimals);
 }
 
-// Helper functions for data processing
+// ===== Market Processing Functions =====
+
 /**
  * Extracts market data from raw data
  * @param {RawDataItem[]} rawData - The raw data
@@ -97,8 +105,8 @@ function extractMarketData(rawData, market, index) {
         exchangeRate: Number(formatBigInt(rawData[offset + 2]?.result)),
         price: Number(formatBigInt(rawData[offset + 6]?.result, PRICE_DECIMALS)),
         cTokenAddress: rawData[offset + 7]?.result,
-        userSupplied: Number(formatUnits(rawData[offset + 8]?.result || BigInt(0), market.decimals)),
-        userBorrowed: Number(formatUnits(rawData[offset + 9]?.result || BigInt(0), market.decimals)),
+        userSupplied: safeFormatUnits(rawData[offset + 8]?.result, market.decimals),
+        userBorrowed: safeFormatUnits(rawData[offset + 9]?.result, market.decimals),
     };
 }
 
@@ -131,6 +139,32 @@ function calculateMarketValues(market) {
 }
 
 /**
+ * Processes a single market from raw data
+ * @param {Market} market - The market to process
+ * @param {RawDataItem[]} rawData - The raw data
+ * @param {number} index - The index of the market
+ * @returns {Object} - The processed market and its values
+ */
+function processMarket(market, rawData, index) {
+    // Extract basic market data
+    const processedMarket = extractMarketData(rawData, market, index);
+
+    // Calculate metrics
+    processedMarket.totalSupplyUnderlying = Number(processedMarket.totalSupply) * processedMarket.exchangeRate;
+    processedMarket.availableLiquidity = processedMarket.totalSupplyUnderlying - processedMarket.totalBorrows - Number(processedMarket.totalReserve);
+
+    // Calculate values
+    const values = calculateMarketValues(processedMarket);
+
+    return {
+        market: processedMarket,
+        values
+    };
+}
+
+// ===== Account Processing Functions =====
+
+/**
  * Extracts account info from raw data
  * @param {RawDataItem[]} rawData - The raw data
  * @returns {AccountInfo} - The account info
@@ -139,13 +173,32 @@ function extractAccountInfo(rawData) {
     const accountData = rawData[rawData.length - 3]?.result || [BigInt(0), BigInt(0)];
 
     return {
-        totalCollateralValue: Number(formatUnits(accountData[1], 18)),
-        totalBorrowedValue: Number(formatUnits(accountData[0], 18)),
-        totalUserRewards: Number(formatUnits(rawData[rawData.length - 1]?.result || BigInt(0), 18)),
+        totalCollateralValue: safeFormatUnits(accountData[1], 18),
+        totalBorrowedValue: safeFormatUnits(accountData[0], 18),
+        totalUserRewards: safeFormatUnits(rawData[rawData.length - 1]?.result, 18),
     };
 }
 
-// Main export functions
+/**
+ * Extracts health factor from raw data
+ * @param {RawDataItem[]} rawData - The raw data
+ * @returns {number} - The health factor
+ */
+function extractHealthFactor(rawData) {
+    return Number(formatUnits(rawData[rawData.length - 2]?.result || BigInt(0), HEALTH_FACTOR_DECIMALS));
+}
+
+/**
+ * Calculates available borrowing capacity
+ * @param {AccountInfo} accountInfo - The account info
+ * @returns {number} - The available borrowing capacity
+ */
+function calculateAvailableBorrowing(accountInfo) {
+    return accountInfo.totalCollateralValue - accountInfo.totalBorrowedValue;
+}
+
+// ===== Main Export Functions =====
+
 /**
  * Formats contract data for markets
  * @param {RawDataItem[]|null} rawData - The raw data
@@ -155,63 +208,55 @@ export function formatContractDataForMarkets(rawData) {
     if (!rawData) {
         return {
             updatedMarkets: [],
-            newHealthFactor: 0,
-            allSuppliedAssetsValue: 0,
-            allBorrowedAssetsValue: 0
+            healthFactor: 0,
+            marketsOverView: {
+                allSuppliedAssetsValue: 0,
+                allBorrowedAssetsValue: 0,
+                allReservedAssetsValue: 0,
+                marketsSize: 0
+            },
+            accountInfo: {
+                totalCollateralValue: 0,
+                totalBorrowedValue: 0,
+                totalUserRewards: 0
+            }
         };
     }
+
     let allSuppliedAssetsValue = 0;
     let allBorrowedAssetsValue = 0;
     let allReservedAssetsValue = 0;
 
     const updatedMarkets = initialMarketsData.map((market, index) => {
-        const offset = index * ITEMS_PER_MARKET;
+        const { market: processedMarket, values } = processMarket(market, rawData, index);
 
-        market.totalSupply = formatBigInt(rawData[offset]?.result, market.decimals, 5);
-        market.totalBorrows = Number(formatBigInt(rawData[offset + 1]?.result, market.decimals, 5));
-        market.totalReserve = formatBigInt(rawData[offset + 4]?.result, market.decimals, 5);
+        // Accumulate values
+        allSuppliedAssetsValue += values.suppliedValue;
+        allBorrowedAssetsValue += values.borrowedValue;
+        allReservedAssetsValue += values.reservedValue;
 
-        market.supplyAPR = formatBigInt(rawData[offset + 3]?.result, 16);
-        market.borrowAPR = formatBigInt(rawData[offset + 5]?.result, 16);
-
-        market.exchangeRate = Number(formatBigInt(rawData[offset + 2]?.result));
-        market.price = Number(formatBigInt(rawData[offset + 6]?.result, PRICE_DECIMALS));
-        market.cTokenAddress = rawData[offset + 7]?.result;
-        market.userSupplied = Number(formatUnits(rawData[offset + 8]?.result || BigInt(0), market.decimals));
-        market.userBorrowed = Number(formatUnits(rawData[offset + 9]?.result || BigInt(0), market.decimals));
-
-        // Total Supply in underlying tokens
-        market.totalSupplyUnderlying = market.totalSupply * market.exchangeRate;
-
-        // in underlying tokens used in how much max can borrow and withdraw  
-        market.availableLiquidity = market.totalSupplyUnderlying - market.totalBorrows - market.totalReserve;
-
-        allSuppliedAssetsValue += market.totalSupplyUnderlying * market.price;
-        allBorrowedAssetsValue += market.totalBorrows * market.price;
-        allReservedAssetsValue += market.totalReserve * market.price;
-
-        return {
-            ...market,
-        };
+        return processedMarket;
     });
+
     const marketsOverView = {
-        allSuppliedAssetsValue: allSuppliedAssetsValue,
-        allBorrowedAssetsValue: allBorrowedAssetsValue,
-        allReservedAssetsValue: allReservedAssetsValue,
+        allSuppliedAssetsValue,
+        allBorrowedAssetsValue,
+        allReservedAssetsValue,
         marketsSize: allSuppliedAssetsValue + allBorrowedAssetsValue,
     };
-    const healthFactor = Number(formatUnits(rawData[rawData.length - 2]?.result || BigInt(0), HEALTH_FACTOR_DECIMALS));
-    const accountInfo = {
-        totalCollateralValue: Number(formatUnits(rawData[rawData.length - 3]?.result?.[1] || BigInt(0), 18)),
-        totalBorrowedValue: Number(formatUnits(rawData[rawData.length - 3]?.result?.[0] || BigInt(0), 18)),
-        totalUserRewards: Number(formatUnits(rawData[rawData.length - 1]?.result || BigInt(0), 18)),
-    };
 
-    return { updatedMarkets, healthFactor, marketsOverView, accountInfo }
+    const healthFactor = extractHealthFactor(rawData);
+    const accountInfo = extractAccountInfo(rawData);
+
+    return { updatedMarkets, healthFactor, marketsOverView, accountInfo };
 }
 
-
-export const formatContractDataForDashboard = (rawData) => {
+/**
+ * Formats contract data for dashboard
+ * @param {RawDataItem[]|null} rawData - The raw data
+ * @returns {Object} - The formatted dashboard data
+ */
+export function formatContractDataForDashboard(rawData) {
     // Return default values if no data
     if (!rawData) {
         return {
@@ -220,63 +265,56 @@ export const formatContractDataForDashboard = (rawData) => {
                 supplied: 0,
                 borrowed: 0,
                 availableToBorrow: 0,
-                healthFactor: 0
+                healthFactor: 0,
+                totalRewards: 0
+            },
+            marketsData: {},
+            accountInfo: {
+                totalCollateralValue: 0,
+                totalBorrowedValue: 0
             }
         };
     }
+
     const userPositions = {};
     const marketsData = {};
     let totalSupplied = 0;
     let totalBorrowed = 0;
 
     initialMarketsData.forEach((market, index) => {
-        const offset = index * ITEMS_PER_MARKET;
+        const { market: processedMarket, values } = processMarket(market, rawData, index);
+        const price = processedMarket.price;
 
-        market.totalSupply = Number(formatBigInt(rawData[offset].result, market.decimals, 5));
-        market.totalBorrows = Number(formatBigInt(rawData[offset + 1].result, market.decimals, 5));
-        market.totalReserve = formatBigInt(rawData[offset + 4].result, market.decimals, 5);
+        // Calculate user position values
+        totalSupplied += processedMarket.userSupplied * price;
+        totalBorrowed += processedMarket.userBorrowed * price;
 
-        market.supplyAPR = formatBigInt(rawData[offset + 3].result, 16);
-        market.borrowAPR = formatBigInt(rawData[offset + 5].result, 16);
-
-        market.exchangeRate = Number(formatBigInt(rawData[offset + 2].result));
-        const price = Number(formatBigInt(rawData[offset + 6].result, PRICE_DECIMALS));
-        market.cTokenAddress = rawData[offset + 7].result;
-        market.userSupplied = Number(formatUnits(rawData[offset + 8]?.result, market.decimals) || 0);
-        market.userBorrowed = Number(formatUnits(rawData[offset + 9]?.result, market.decimals) || 0);
-
-        // Total Supply in underlying tokens
-        market.totalSupplyUnderlying = market.totalSupply * market.exchangeRate;
-
-        // in underlying tokens used in how much max can borrow and withdraw  
-        market.availableLiquidity = market.totalSupplyUnderlying - market.totalBorrows - market.totalReserve;
-
-        totalSupplied += market.userSupplied * price;
-        totalBorrowed += market.userBorrowed * price;
-        if (market.userBorrowed || market.userSupplied) {
-            userPositions[market.asset] = {
-                supplied: market.userSupplied,
-                borrowed: market.userBorrowed,
+        // Add to user positions if user has a position
+        if (processedMarket.userBorrowed || processedMarket.userSupplied) {
+            userPositions[processedMarket.asset] = {
+                supplied: processedMarket.userSupplied,
+                borrowed: processedMarket.userBorrowed,
                 price,
-                supplyAPR: market.supplyAPR,
-                borrowAPR: market.borrowAPR,
+                supplyAPR: processedMarket.supplyAPR,
+                borrowAPR: processedMarket.borrowAPR,
             };
         }
 
-        marketsData[market.asset] = {
-            ...market,
+        // Add to markets data
+        marketsData[processedMarket.asset] = {
+            ...processedMarket,
             price,
         };
     });
+
     const accountInfo = {
-        totalCollateralValue: Number(formatUnits(rawData[rawData.length - 3].result[1], 18)),
-        totalBorrowedValue: Number(formatUnits(rawData[rawData.length - 3].result[0], 18)),
+        totalCollateralValue: safeFormatUnits(rawData[rawData.length - 3].result[1], 18),
+        totalBorrowedValue: safeFormatUnits(rawData[rawData.length - 3].result[0], 18),
     };
-    const healthFactor = Number(formatBigInt(rawData[rawData.length - 2].result, HEALTH_FACTOR_DECIMALS));
 
-    const howMuchCanBorrow = accountInfo.totalCollateralValue - accountInfo.totalBorrowedValue;
-
-    const totalRewards = Number(formatUnits(rawData[rawData.length - 1].result, 18));
+    const healthFactor = extractHealthFactor(rawData);
+    const howMuchCanBorrow = calculateAvailableBorrowing(accountInfo);
+    const totalRewards = safeFormatUnits(rawData[rawData.length - 1].result, 18);
 
     const overallPosition = {
         supplied: totalSupplied,
@@ -285,5 +323,6 @@ export const formatContractDataForDashboard = (rawData) => {
         totalRewards,
         healthFactor,
     };
+
     return { userPositions, overallPosition, marketsData, accountInfo };
 };
