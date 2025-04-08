@@ -8,10 +8,21 @@ import DetailsSection from "./DetailsSection";
 import { formatNumberToFixed, calculateUSDPrice } from "../../../utils/format";
 import { calculateNewHealthFactor, isValidAmount } from "../../../utils/utils";
 
+/**
+ * Component for handling token withdrawal operations in the lending protocol
+ * @param {Object} props - Component props
+ * @param {Object} props.market - Market information including token details and rates
+ * @param {string} props.address - User's wallet address
+ * @param {Function} props.openConnectModal - Function to open wallet connection modal
+ * @param {Object} props.accountInfo - User's account information including balances
+ * @returns {React.ReactElement} Withdraw tab component
+ */
 const WithdrawTab = ({ market, address, openConnectModal, accountInfo }) => {
+  // State for managing withdraw operation
   const [amount, setAmount] = useState("0.0");
   const [canWithdraw, setCanWithdraw] = useState(false);
 
+  // Custom hook for withdraw operations
   const {
     handleWithdraw,
     isWithdrawing,
@@ -22,6 +33,10 @@ const WithdrawTab = ({ market, address, openConnectModal, accountInfo }) => {
     maxWithdrawableAmount,
   } = useWithdraw(market, address);
 
+  /**
+   * Handles input amount changes and validates the amount
+   * @param {React.ChangeEvent<HTMLInputElement>} e - Input change event
+   */
   const handleAmountChange = (e) => {
     const inputValue = e.target.value;
     const regex = /^\d*\.?\d{0,18}$/;
@@ -31,6 +46,9 @@ const WithdrawTab = ({ market, address, openConnectModal, accountInfo }) => {
     }
   };
 
+  /**
+   * Handles the withdraw operation
+   */
   const handleWithdrawClick = async () => {
     if (!address) {
       openConnectModal?.();
@@ -40,6 +58,7 @@ const WithdrawTab = ({ market, address, openConnectModal, accountInfo }) => {
     await handleWithdraw(amountInWei);
   };
 
+  // Handle withdraw success and error states
   useEffect(() => {
     if (isWithdrawSuccess) {
       toast.success("Withdraw successful!");
@@ -54,6 +73,7 @@ const WithdrawTab = ({ market, address, openConnectModal, accountInfo }) => {
     }
   }, [isWithdrawSuccess, isWithdrawError, withdrawError]);
 
+  // Update withdraw eligibility based on amount and limit
   useEffect(() => {
     setCanWithdraw(
       isValidAmount({
@@ -63,6 +83,7 @@ const WithdrawTab = ({ market, address, openConnectModal, accountInfo }) => {
     );
   }, [amount, maxWithdrawableAmount]);
 
+  // Details section data for displaying withdraw information
   const details = useMemo(
     () => [
       {

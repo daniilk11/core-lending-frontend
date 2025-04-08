@@ -1,7 +1,31 @@
-// export const lendingContractAddress = '0x88fCE51Bc489bEd1812Afb25A84026209535Cef6';
+/**
+ * @fileoverview Core configuration file for the lending protocol.
+ * Contains contract addresses, ABIs, and initial market data for the lending protocol.
+ * This file serves as the central configuration point for all contract interactions.
+ */
+
 export const lendingContractAddress = '0xbcFEC612270033B71d878de94f94F46C55B5b48A';
 export const WETH_ADDRESS = '0x4200000000000000000000000000000000000006'; // Base sepolia
 
+/**
+ * Initial configuration data for supported lending markets
+ * Each market represents a supported asset with its lending parameters
+ * @constant {Array<{
+ *   asset: string,
+ *   address: string,
+ *   decimals: number,
+ *   ltv: number,
+ *   cTokenAddress: string,
+ *   baseRate: number,
+ *   reserveFactor: number,
+ *   price: number,
+ *   totalSupplyUnderlying?: number,
+ *   totalBorrows: number,
+ *   totalSupply: number,
+ *   exchangeRate: number,
+ *   multiplier: number
+ * }>}
+ */
 export const initialMarketsData = [
     {
         asset: 'WETH',
@@ -51,46 +75,10 @@ export const initialMarketsData = [
     }
 ];
 
-// MY contracts TODO delete
-// router 0x94cC0AaC535CCDB3C01d6787D6413C739ae12bc4
-// lending 0xbcFEC612270033B71d878de94f94F46C55B5b48A
-
-// cweth 0x38e3176f78E4adF44795Cade3B3f93041Cc55434
-// SEND HERE A TOKENS FOR STAKING
-// cwethStaking 0xB3f1a6B7D8A9328E1cB3D98CF9e2d0d94613376A
-// weeth 0x4200000000000000000000000000000000000006 
-// oracle 0x4aDC67696bA383F43DD60A9e78F2C97Fbbfc7cb1
-
-// cLink  0xb242d5b5F092dAe8Dba26744aca4450de4fd89df
-// cLinkStaking 0x2c67995EE7c03aD0Dd4d3af68f0BF640b6e870F8
-// ERC-20 0xE4aB69C077896252FAFBD49EFD26B5D171A32410 
-// oracle 0xb113F5A928BCfF189C998ab20d753a47F9dE5A61 
-
-// cusdc 0x5Cf3aB2fBF3b213241Bff02546A81a036613b3b4
-// usdcStaking 0x15d89a2256970E25c22C4deFE0ceBB6d1cF7A029
-// ERC-20  0x036CbD53842c5426634e7929541eC2318f3dCF7e
-// oracle  0xd30e2101a97dcbAeBCBC04F14C3f624E67A35165
-
-
-
-// MY contracts old TODO delete
-// lending 0x88fCE51Bc489bEd1812Afb25A84026209535Cef6
-// cweth 0x3437b08048F95864e6712748df90c6f70607e0c0
-// SEND HERE A TOKENS FOR STAKING
-// cwethStaking 0x8637e87885a76aBa3D25BfE3dDF0b061d6Bb360D
-// weeth 0x4200000000000000000000000000000000000006 
-// oracle 0x4aDC67696bA383F43DD60A9e78F2C97Fbbfc7cb1
-
-// cLink  0xAE5Ce0D13c4B6e69cAe222b0461D690e1ea7086e
-// cLinkStaking 0x2c67995EE7c03aD0Dd4d3af68f0BF640b6e870F8
-// ERC-20 0xE4aB69C077896252FAFBD49EFD26B5D171A32410 
-// oracle 0xb113F5A928BCfF189C998ab20d753a47F9dE5A61 
-
-// cusdc 0x43325B1bdFbac97aE27F0521cdaBA4A44c292613
-// usdcStaking 0xD923618d9eBd7cfB1102e83424111DBF898EcEef
-// ERC-20  0x036CbD53842c5426634e7929541eC2318f3dCF7e
-// oracle  0xd30e2101a97dcbAeBCBC04F14C3f624E67A35165
-
+/**
+ * Standard ERC20 token ABI containing essential functions for token interactions
+ * @constant {Array<Object>}
+ */
 export const erc20ABI = [
     {
         constant: true,
@@ -122,6 +110,10 @@ export const erc20ABI = [
     }
 ];
 
+/**
+ * ABI for the lending contract containing all necessary functions for lending operations
+ * @constant {Array<Object>}
+ */
 export const lendingContractABI = [
     {
         "inputs": [{ "internalType": "address", "name": "user", "type": "address" }],

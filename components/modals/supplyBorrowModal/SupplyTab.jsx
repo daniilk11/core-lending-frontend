@@ -10,13 +10,24 @@ import useWeth from "../../../hooks/useWeth";
 import DetailsSection from "./DetailsSection";
 import { formatNumberToFixed, calculateUSDPrice } from "../../../utils/format";
 
+/**
+ * Component for handling token supply operations in the lending protocol
+ * @param {Object} props - Component props
+ * @param {Object} props.market - Market information including token details and rates
+ * @param {string} props.address - User's wallet address
+ * @param {number} props.healthFactor - User's health factor for the market
+ * @param {Function} props.openConnectModal - Function to open wallet connection modal
+ * @returns {React.ReactElement} Supply tab component
+ */
 const SupplyTab = ({ market, address, healthFactor, openConnectModal }) => {
+  // State for managing supply operation
   const [needApprove, setNeedApprove] = useState(false);
   const [needWrap, setNeedWrap] = useState(false);
   const [amount, setAmount] = useState("0.00");
   const [isProcessing, setIsProcessing] = useState(false);
   const [isAmountValid, setIsAmountValid] = useState(false);
 
+  // Custom hooks for supply, approval, and WETH operations
   const {
     handleWriteSupply,
     isSupplying,
@@ -47,6 +58,10 @@ const SupplyTab = ({ market, address, healthFactor, openConnectModal }) => {
     ethBalance,
   } = useWeth(market, address);
 
+  /**
+   * Handles input amount changes and validates the amount
+   * @param {React.ChangeEvent<HTMLInputElement>} e - Input change event
+   */
   const handleAmountChange = (e) => {
     const inputValue = e.target.value;
     const regex = /^\d*\.?\d{0,18}$/;
@@ -66,6 +81,9 @@ const SupplyTab = ({ market, address, healthFactor, openConnectModal }) => {
     }
   };
 
+  /**
+   * Handles the supply operation including approval and WETH wrapping if needed
+   */
   const handleSupply = useCallback(async () => {
     if (!address) {
       openConnectModal?.();
@@ -105,6 +123,7 @@ const SupplyTab = ({ market, address, healthFactor, openConnectModal }) => {
     isEthMarket,
   ]);
 
+  // Handle WETH wrapping success and error states
   useEffect(() => {
     if (isWrapSuccess) {
       toast.success("Successfully wrapped ETH to WETH!");
@@ -119,6 +138,7 @@ const SupplyTab = ({ market, address, healthFactor, openConnectModal }) => {
     }
   }, [isWrapSuccess, isWrapError, wethError]);
 
+  // Handle token approval success and error states
   useEffect(() => {
     if (isApproveSuccess) {
       toast.success("Successfully approved spending!");
@@ -136,6 +156,7 @@ const SupplyTab = ({ market, address, healthFactor, openConnectModal }) => {
     }
   }, [isApproveSuccess, isApproveError, approveError]);
 
+  // Handle supply success and error states
   useEffect(() => {
     if (isSupplySuccess) {
       toast.success("Supply successful!");
@@ -153,6 +174,7 @@ const SupplyTab = ({ market, address, healthFactor, openConnectModal }) => {
     }
   }, [isSupplySuccess, isSupplyError, supplyError]);
 
+  // Details section data for displaying supply information
   const details = [
     {
       label: "Current Supply",
@@ -168,6 +190,11 @@ const SupplyTab = ({ market, address, healthFactor, openConnectModal }) => {
     { label: "Supply APY", value: `${market?.supplyAPR || 0}%` },
   ];
 
+  /**
+   * Validates if the input amount is valid based on user's balance
+   * @param {number} amount - Amount to validate
+   * @returns {boolean} Whether the amount is valid
+   */
   function checkIfAmountValid(amount) {
     if (!amount || amount <= 0) return false;
 
