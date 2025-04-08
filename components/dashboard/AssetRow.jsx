@@ -1,5 +1,20 @@
 import React from "react";
 
+/**
+ * Row component for displaying individual asset position details
+ * Shows asset information, supplied/borrowed amounts, APR, rewards, and action buttons
+ * @param {Object} props - Component props
+ * @param {string} props.asset - Asset identifier (e.g., 'WETH', 'USDC')
+ * @param {number} props.usdValue - Current USD value of the asset
+ * @param {string} props.type - Type of the position (e.g., 'Core')
+ * @param {number} props.supplied - Amount of asset supplied
+ * @param {number} props.borrowed - Amount of asset borrowed
+ * @param {number} props.rewards - Current rewards earned
+ * @param {React.ComponentType<{className: string}>} props.Logo - Component for rendering asset logo
+ * @param {number} props.apr - Annual Percentage Rate for the position
+ * @param {Function} props.onViewDetails - Callback function to handle position actions
+ * @returns {React.ReactElement} Asset row component
+ */
 const AssetRow = ({
   asset,
   usdValue,
@@ -12,6 +27,7 @@ const AssetRow = ({
   onViewDetails,
 }) => (
   <tr className="hover:bg-purple-50 transition-colors">
+    {/* Asset Column */}
     <td className="p-3 border-b">
       <span className="flex items-center gap-2">
         {Logo && <Logo className="w-6 h-6" />}
@@ -19,12 +35,14 @@ const AssetRow = ({
       </span>
     </td>
 
+    {/* Type Column */}
     <td className="p-3 border-b">
       <span className="inline-block text-xs py-1 px-2 rounded-md bg-green-200 text-green-900">
         {type}
       </span>
     </td>
 
+    {/* Supplied Amount Column */}
     <td className="p-3 border-b">
       <div>
         <div className="text-gray-500 text-sm">
@@ -34,6 +52,7 @@ const AssetRow = ({
       </div>
     </td>
 
+    {/* Borrowed Amount Column */}
     <td className="p-3 border-b">
       <div>
         <div className="text-gray-500 text-sm">
@@ -43,12 +62,14 @@ const AssetRow = ({
       </div>
     </td>
 
+    {/* APR Column */}
     <td className="p-3 border-b">
       <div className="font-mono text-black">
         {(Number(apr) || 0).toFixed(2)}%
       </div>
     </td>
 
+    {/* Rewards Column */}
     <td className="p-3 border-b">
       <div className="font-mono text-black flex items-center">
         <span className="mr-1">
