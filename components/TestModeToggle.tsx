@@ -3,15 +3,26 @@
 import { useState, useEffect } from 'react';
 import { getIsTestMode, setIsTestMode } from '../lib/mockData';
 
+/**
+ * TestModeToggle component provides a UI toggle for switching between test and production modes.
+ * The component manages its own state and syncs with the global test mode setting.
+ * It includes a visual indicator and hover state for better UX.
+ * 
+ * @returns {JSX.Element | null} A toggle button for test mode, or null if not mounted
+ */
 export default function TestModeToggle() {
+  // Local state for test mode status
   const [isTestMode, setIsTestModeState] = useState(false);
+  // Mount state to prevent hydration mismatch
   const [isMounted, setIsMounted] = useState(false);
 
+  // Initialize test mode state on mount
   useEffect(() => {
     setIsTestModeState(getIsTestMode());
     setIsMounted(true);
   }, []);
 
+  // Prevent rendering until after hydration
   if (!isMounted) return null;
 
   return (
