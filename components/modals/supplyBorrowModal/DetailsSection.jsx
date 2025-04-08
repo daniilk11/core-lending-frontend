@@ -1,39 +1,34 @@
-import React from 'react';
+import React from "react";
 
-const DetailsSection = ({ 
-    title = "Details",
-    showCollateral = false,
-    details = [],
+/**
+ * Component for displaying detailed information in a consistent format
+ * @param {Object} props - Component props
+ * @param {string} props.title - Section title (default: "Details")
+ * @param {boolean} props.showCollateral - Whether to show collateral toggle (default: false)
+ * @param {Array<{label: string, value: string}>} props.details - Array of detail objects with label and value
+ * @returns {React.ReactElement} Details section component
+ */
+const DetailsSection = ({
+  title = "Details",
+  showCollateral = false,
+  details = [],
 }) => {
-    return (
-        <div className="space-y-4">
-            <h4 className="font-medium text-lg text-[#c8b6ff]">{title}</h4>
-            
-            {/* TODO delete {showCollateral && (
-                <div className="flex items-center justify-between">
-                    <span>Use as collateral</span>
-                    <label className="relative inline-flex items-center cursor-pointer">
-                        <input 
-                            type="checkbox" 
-                            checked={useAsCollateral} 
-                            onChange={onCollateralToggle}
-                            className="sr-only peer"
-                        />
-                        <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#c8b6ff]"></div>
-                    </label>
-                </div>
-            )} */}
+  return (
+    <div className="space-y-4">
+      {/* Section Title */}
+      <h4 className="font-medium text-lg text-[#c8b6ff]">{title}</h4>
 
-            <div className="space-y-2 text-sm">
-                {details.map((detail, index) => (
-                    <div key={index} className="flex justify-between">
-                        <span>{detail.label}</span>
-                        <span>{detail.value}</span>
-                    </div>
-                ))}
-            </div>
-        </div>
-    );
+      {/* Details List */}
+      <div className="space-y-2 text-sm">
+        {details.map((detail, index) => (
+          <div key={index} className="flex justify-between">
+            <span>{detail.label}</span>
+            <span>{detail.value}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 };
 
-export default DetailsSection; 
+export default DetailsSection;

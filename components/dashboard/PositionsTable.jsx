@@ -7,7 +7,10 @@ import WethLogo from "../../asserts/weth_logo.svg";
 import UsdcLogo from "../../asserts/usdc_logo.svg";
 import LinkLogo from "../../asserts/chainlink_logo.png";
 
-// Create components for each logo
+/**
+ * Map of asset logos to their respective Image components
+ * @type {Object.<string, React.ComponentType<{className: string}>>}
+ */
 const LogoComponents = {
   WETH: ({ className }) => (
     <Image
@@ -19,7 +22,6 @@ const LogoComponents = {
     />
   ),
   LINK: ({ className }) => (
-    // todo fix logo
     <Image
       src={LinkLogo}
       alt="LINK Logo"
@@ -39,13 +41,24 @@ const LogoComponents = {
   ),
 };
 
+/**
+ * Table component displaying user's open lending positions
+ * Shows detailed information about each asset position including supplied/borrowed amounts and APR
+ * @param {Object} props - Component props
+ * @param {Object.<string, Object>} props.userPositions - Map of asset positions
+ * @param {Function} props.onViewDetails - Callback function to handle viewing position details
+ * @returns {React.ReactElement} Positions table component
+ */
 const PositionsTable = ({ userPositions, onViewDetails }) => (
   <div className="flex flex-col space-y-6">
+    {/* Table Header */}
     <h1 className="text-2xl font-semibold mb-4 text-left text-purple-800 dark:text-grey-200">
       Open Positions
     </h1>
+    {/* Table Container */}
     <div className="overflow-x-auto bg-white rounded-lg shadow">
       <table className="min-w-full">
+        {/* Table Header Row */}
         <thead className="bg-purple-100">
           <tr>
             <th className="text-left p-3 font-semibold">Asset</th>
@@ -57,6 +70,7 @@ const PositionsTable = ({ userPositions, onViewDetails }) => (
             <th className="text-center p-3 font-semibold">Action</th>
           </tr>
         </thead>
+        {/* Table Body */}
         <tbody>
           {Object.entries(userPositions).map(([asset, data]) => (
             <AssetRow
