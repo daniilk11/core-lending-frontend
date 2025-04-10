@@ -12,8 +12,6 @@ import TestModeToggle from "./TestModeToggle";
  * @returns {React.ReactElement} Header component
  */
 const Header = () => {
-  const basePath =
-    process.env.NODE_ENV === "production" ? "/core-lending-frontend" : "";
   // State for mobile menu visibility
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -29,7 +27,7 @@ const Header = () => {
             className="flex items-center"
           >
             <Link
-              href={`${basePath}/`}
+              href={`/`}
               className="text-3xl pb-1 font-bold bg-gradient-to-r from-purple-800 to-purple-600 bg-clip-text text-transparent"
             >
               Core
@@ -69,7 +67,7 @@ const Header = () => {
                 whileTap={{ scale: 0.95 }}
               >
                 <Link
-                  href={`${basePath}/${item.toLowerCase()}`}
+                  href={`/${item.toLowerCase()}`}
                   className="text-xl text-purple-800 hover:text-purple-600 transition-colors duration-200 relative group"
                 >
                   {item}
@@ -116,7 +114,7 @@ const Header = () => {
                   }}
                 >
                   <Link
-                    href={`${basePath}/${item.toLowerCase()}`}
+                    href={`/${item.toLowerCase()}`}
                     className="block text-xl text-purple-800 hover:text-purple-600 transition-all duration-200 hover:translate-x-2"
                     onClick={() => setIsMenuOpen(false)}
                   >

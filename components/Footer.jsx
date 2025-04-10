@@ -1,4 +1,5 @@
 import React from "react";
+import Link from "next/link";
 
 /**
  * Footer component displaying navigation links and community information
@@ -17,20 +18,20 @@ const Footer = () => {
           <h3 className="font-bold mb-2 text-purple-800">Ultra</h3>
           <ul className="space-y-2">
             <li>
-              <a
-                href={`${basePath}/dashboard`}
+              <Link
+                href="/dashboard"
                 className="text-purple-700 hover:text-purple-900 transition-colors"
               >
                 Dashboard
-              </a>
+              </Link>
             </li>
             <li>
-              <a
-                href={`${basePath}/markets`}
+              <Link
+                href="/markets"
                 className="text-purple-700 hover:text-purple-900 transition-colors"
               >
                 Markets
-              </a>
+              </Link>
             </li>
           </ul>
         </div>
@@ -39,20 +40,20 @@ const Footer = () => {
           <h3 className="font-bold mb-2 text-purple-800">Help</h3>
           <ul className="space-y-2">
             <li>
-              <a
-                href={`${basePath}/user-docs`}
+              <Link
+                href="/user-docs"
                 className="text-purple-700 hover:text-purple-900 transition-colors"
               >
                 User Docs
-              </a>
+              </Link>
             </li>
             <li>
-              <a
-                href={`${basePath}/faq`}
+              <Link
+                href="/faq"
                 className="text-purple-700 hover:text-purple-900 transition-colors"
               >
                 FAQ
-              </a>
+              </Link>
             </li>
           </ul>
         </div>
