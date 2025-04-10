@@ -1,7 +1,7 @@
 import React from "react";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
-import { UserDocs } from "../../components/UserDocs";
+import UserDocs from "../../components/UserDocs";
 
 export default function FAQPage() {
   return (

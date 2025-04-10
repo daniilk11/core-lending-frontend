@@ -6,6 +6,9 @@ import React from "react";
  * @returns {React.ReactElement} Footer component
  */
 const Footer = () => {
+  const basePath =
+    process.env.NODE_ENV === "production" ? "/core-lending-frontend" : "";
+
   return (
     <footer className="bg-purple-100 p-8">
       <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8">
@@ -15,7 +18,7 @@ const Footer = () => {
           <ul className="space-y-2">
             <li>
               <a
-                href="/dashboard"
+                href={`${basePath}/dashboard`}
                 className="text-purple-700 hover:text-purple-900 transition-colors"
               >
                 Dashboard
@@ -23,7 +26,7 @@ const Footer = () => {
             </li>
             <li>
               <a
-                href="/markets"
+                href={`${basePath}/markets`}
                 className="text-purple-700 hover:text-purple-900 transition-colors"
               >
                 Markets
@@ -37,7 +40,7 @@ const Footer = () => {
           <ul className="space-y-2">
             <li>
               <a
-                href="/user-docs"
+                href={`${basePath}/user-docs`}
                 className="text-purple-700 hover:text-purple-900 transition-colors"
               >
                 User Docs
@@ -45,7 +48,7 @@ const Footer = () => {
             </li>
             <li>
               <a
-                href="/faq"
+                href={`${basePath}/faq`}
                 className="text-purple-700 hover:text-purple-900 transition-colors"
               >
                 FAQ
